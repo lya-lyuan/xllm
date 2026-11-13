@@ -35,6 +35,11 @@ limitations under the License.
 namespace xllm::kernel::npu {
 inline constexpr int64_t kDsaMetadataBufferElements = 1024;
 
+// Dense FP16 ND input. Returns row/column INT8 matrices and FP32 absmax
+// vectors.
+std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor>
+row_col_int8_quant(const torch::Tensor& input);
+
 namespace op_infer {
 constexpr int32_t N = 32;
 // npu tensor max size

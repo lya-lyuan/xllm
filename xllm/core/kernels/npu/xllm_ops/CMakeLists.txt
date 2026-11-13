@@ -16,6 +16,7 @@ cc_library(
     moe_init_routing_v3.cpp
     quantize.cpp
     quant_dynamic.cpp
+    row_col_int8_quant.cpp
     dequant_swiglu_quant.cpp
     compressor.cpp
     hc_post.cpp
