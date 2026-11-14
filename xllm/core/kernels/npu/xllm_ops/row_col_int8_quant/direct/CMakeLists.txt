@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(rowcol_direct LANGUAGES C CXX)
+set(SOC_VERSION Ascend910_9382 CACHE STRING "Target NPU")
+set(ASCEND_CANN_PACKAGE_PATH /usr/local/Ascend/cann-9.1.0 CACHE PATH "CANN root")
+set(RUN_MODE npu)
+include(${ASCEND_CANN_PACKAGE_PATH}/compiler/tikcpp/ascendc_kernel_cmake/ascendc.cmake)
+ascendc_library(rowcol_direct SHARED kernels.cpp)
