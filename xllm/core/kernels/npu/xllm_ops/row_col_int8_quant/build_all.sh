@@ -6,7 +6,8 @@ mkdir -p logs
 cmake --preset=default
 cmake --build build_out --target binary package -j "${JOBS:-8}"
 mkdir -p "$ROWCOL_PREFIX"
-bash build_out/custom_opp_ubuntu_aarch64.run --quiet --install-path="$ROWCOL_PREFIX"
+cmake -DBUILD_DIR="$PWD/build_out" -DINSTALL_PREFIX="$ROWCOL_PREFIX" \
+  -P cmake/install_package.cmake
 source env.sh
 cmake -S direct -B build_direct -DCMAKE_BUILD_TYPE=Release
 cmake --build build_direct -j "${JOBS:-8}"

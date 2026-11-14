@@ -23,6 +23,9 @@ The generated `.run` package installs beneath
 `$HOME/.local/rowcol-int8`, never into system CANN. Set `ROWCOL_PREFIX` to
 choose a different private installation directory. The binding is built
 ahead of testing; the solution does not JIT compile during timed calls.
+The installer reads the actual package name from `build_out/CPackConfig.cmake`,
+so it does not assume an Ubuntu package name on openEuler. A missing package or
+an installer error terminates the build instead of selecting a stale package.
 `env.sh` selects a project-local `.venv` when present. The release validation
 uses a private venv with NumPy 2.2.6 and ml_dtypes 0.6.0, while reusing the
 matching system torch and torch_npu packages. Set `ROWCOL_WHEELS` to the supplied
@@ -60,6 +63,23 @@ python3.12 tests/benchmark_baselines.py --spec /workspace/int8-task-spec --repor
 See [the design](docs/design.md) for indexing, buffer budgets and numerical
 semantics. JSON reports and raw logs are the evidence, not this README.
 Historical failed/interrupted trials are retained separately from final runs.
+
+## Delivery Tool Regressions
+
+With CMake and openpyxl 3.1.5 available, run the CPU-only regressions:
+
+```bash
+python3.12 -m unittest discover -s tests -p test_delivery_tools.py -v
+```
+
+Report generation requires successful public, extended, repeated-accuracy,
+memory, performance and baseline evidence, including per-case coverage.
+At least one precision-qualified baseline must exist per performance case;
+both prescribed candidates must be considered and exclusions explained.
+The selected baseline must be the fastest qualified one. Performance checks
+are recomputed by the original public checker. Missing or failed gates stop
+packaging with a nonzero exit status; an earlier archive is not revalidated by
+a failed packaging invocation. The seven materials remain a local submission.
 
 ## Environment Boundary
 
