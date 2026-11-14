@@ -259,15 +259,12 @@ rowcol_launch(uint32_t blocks,
               uint32_t n) {
   RowColInt8QuantTilingData t{m, n, (m + 63) / 64, (n + 255) / 256, blocks};
   for (uint32_t stage = 0; stage < 3; ++stage) {
-    auto status =
-        row_col_direct<<<blocks, nullptr, stream> > >((GM_ADDR)x,
-                                                      (GM_ADDR)qr,
-                                                      (GM_ADDR)qc,
-                                                      (GM_ADDR)r,
-                                                      (GM_ADDR)c,
-                                                      (GM_ADDR)workspace,
-                                                      stage,
-                                                      &t);
+    // Preserve the Ascend C launch syntax, which C++ formatting misparses.
+    // clang-format off
+    auto status = row_col_direct<<<blocks, nullptr, stream>>>(
+        (GM_ADDR)x, (GM_ADDR)qr, (GM_ADDR)qc, (GM_ADDR)r, (GM_ADDR)c,
+        (GM_ADDR)workspace, stage, &t);
+    // clang-format on
     if (status != 0) return status;
   }
   return 0;
