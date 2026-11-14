@@ -7,10 +7,13 @@ Ascend910_9382, CANN 9.1.0.
 ## Build
 
 ```bash
+cd /workspace/int8-rowcol-release
 mkdir -p logs
 /usr/local/python3.12.13/bin/python3.12 -m venv --system-site-packages .venv
-.venv/bin/python3.12 -m pip install --no-deps 'numpy==2.2.6' \
-  'https://files.pythonhosted.org/packages/ed/cf/87e8a6c57eed63a91782a0d229856ddf73e138ce004dd71e2799a9dcdb33/ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl#sha256=37da32aa97749251025666d62372775019594577b9c9e9cfda83bed48d778fdb'
+ROWCOL_WHEELS=${ROWCOL_WHEELS:-/workspace}
+.venv/bin/python3.12 -m pip install --no-index --no-deps \
+  "$ROWCOL_WHEELS"/numpy-2.2.6-*aarch64*.whl \
+  "$ROWCOL_WHEELS"/ml_dtypes-0.6.0-*aarch64*.whl
 bash build_all.sh > logs/build.log 2>&1
 source env.sh
 ./build_examples/aclnn_example
@@ -25,9 +28,8 @@ so it does not assume an Ubuntu package name on openEuler. A missing package or
 an installer error terminates the build instead of selecting a stale package.
 `env.sh` selects a project-local `.venv` when present. The release validation
 uses a private venv with NumPy 2.2.6 and ml_dtypes 0.6.0, while reusing the
-matching system torch and torch_npu packages. The commands download dependencies
-from public package hosts; no local wheelhouse attachment is required. Run from
-this operator project directory in a fresh checkout. Report generation needs
+matching system torch and torch_npu packages. Set `ROWCOL_WHEELS` to the supplied
+wheelhouse when using another directory. Report generation additionally needs
 openpyxl 3.1.5. Do not upgrade shared Python packages for other tasks.
 
 ## Interfaces
@@ -45,22 +47,17 @@ errors. There is deliberately no CPU compute fallback.
 
 ## Reproduce
 
-The unchanged public task files are included in `tests/public_task.zip`.
-See [their provenance](tests/PUBLIC_TASK.md). No separate local task attachment
-or `/workspace/int8-task-spec` directory is required for a current checkout.
+Keep the original public task files in `/workspace/int8-task-spec`.
 
 ```bash
 source env.sh
-python3.12 -m zipfile -e tests/public_task.zip tests/public_task
-export TASK_ROOT="$PWD/tests/public_task"
-mkdir -p reports logs
-python3.12 "$TASK_ROOT/verify.py" --solution-file "$PWD/solution.py" --report reports/public_accuracy.json
-python3.12 tests/repeat_accuracy.py --spec "$TASK_ROOT" --solution "$PWD/solution.py" --report reports/repeat.json
-python3.12 tests/validate_extended.py --spec "$TASK_ROOT" --solution "$PWD/solution.py" --report reports/extended.json
-python3.12 tests/validate_memory.py --spec "$TASK_ROOT" --solution "$PWD/solution.py" --report reports/memory.json
-python3.12 "$TASK_ROOT/benchmark.py" --solution-file "$PWD/solution.py" --report reports/performance.json
-python3.12 "$TASK_ROOT/check_performance.py" --report reports/performance.json --output reports/performance_acceptance.json
-python3.12 tests/benchmark_baselines.py --spec "$TASK_ROOT" --report reports/baselines.json
+python3.12 /workspace/int8-task-spec/verify.py --solution-file "$PWD/solution.py" --report reports/public_accuracy.json
+python3.12 tests/repeat_accuracy.py --spec /workspace/int8-task-spec --solution "$PWD/solution.py" --report reports/repeat.json
+python3.12 tests/validate_extended.py --spec /workspace/int8-task-spec --solution "$PWD/solution.py" --report reports/extended.json
+python3.12 tests/validate_memory.py --spec /workspace/int8-task-spec --solution "$PWD/solution.py" --report reports/memory.json
+python3.12 /workspace/int8-task-spec/benchmark.py --solution-file "$PWD/solution.py" --report reports/performance.json
+python3.12 /workspace/int8-task-spec/check_performance.py --report reports/performance.json --output reports/performance_acceptance.json
+python3.12 tests/benchmark_baselines.py --spec /workspace/int8-task-spec --report reports/baselines.json
 ```
 
 See [the design](docs/design.md) for indexing, buffer budgets and numerical
